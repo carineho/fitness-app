@@ -10,4 +10,4 @@ Fitness tracker synced to Notion, with an LLM-generated weekly workout plan base
 # Tech Stack
 The following tech stack is used:
 - Neon: serverless cloud service built on top of the open-source PostgreSQL database
-- 
+- Alembic: for database migration
