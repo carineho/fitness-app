@@ -99,7 +99,7 @@ Activating virtual environment:
 - Activate the virtual environment
     - `source venv/bin/activate`       # macOS/Linux
     - `venv\Scripts\activate`       # Windows
-- Install dependencies `pip install fastapi sqlmodel uvicorn psycopg2-binary python-dotenv alembic`
+- Install dependencies (to be done the first time only) `pip install fastapi sqlmodel uvicorn psycopg2-binary python-dotenv alembic`
 
 
 # Alembic
