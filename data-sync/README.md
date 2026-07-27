@@ -101,7 +101,7 @@ Lookup table for converting each gym's raw grade into a shared normalize scale, 
 | raw_grade | str | grade as the gym labels it |
 | normalized_value | float | corresponding value on shared internal scale |
 
-
+# TODO: explore alternatives to Neon
 # Setup
 ### DB Connection
 - After creating a Neon project, there will be a connection string
