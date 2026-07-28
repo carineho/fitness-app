@@ -4,6 +4,7 @@ from datetime import date
 
 class Activity(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    notion_page_id: str = Field(unique=True, index=True)
     date: date
     sport_type: str
     notes: Optional[str] = None
