@@ -1,30 +1,39 @@
-# property_mapper.py
+# to extract values from notion database
+
+TITLE = "title"
+PLAIN_TEXT = "plain_text"
+RICH_TEXT = "rich_text"
+NAME = "name"
+START = "start"
+SELECT = "select"
+MULTI_SELECT = "multi_select"
+NUMBER = "number"
+CHECKBOX = "checkbox"
 
 def get_title(properties: dict, key: str) -> str:
-    items = properties[key]["title"]
-    return items[0]["plain_text"] if items else ""
+    items = properties[key][TITLE]
+    return items[0][PLAIN_TEXT] if items else ""
 
 def get_rich_text(properties: dict, key: str) -> str:
-    items = properties[key]["rich_text"]
-    return items[0]["plain_text"] if items else ""
+    items = properties[key][RICH_TEXT]
+    return items[0][PLAIN_TEXT] if items else ""
 
 def get_select(properties: dict, key: str) -> str | None:
-    select = properties[key]["select"]
-    return select["name"] if select else None
+    select = properties[key][SELECT]
+    return select[NAME] if select else None
 
 def get_multi_select(properties: dict, key: str) -> list[str]:
-    return [item["name"] for item in properties[key]["multi_select"]]
+    return [item[NAME] for item in properties[key][MULTI_SELECT]]
 
 def get_date(properties: dict, key: str) -> str | None:
     date_obj = properties[key]["date"]
-    return date_obj["start"] if date_obj else None
+    return date_obj[START] if date_obj else None
 
 def get_number(properties: dict, key: str) -> float | None:
-    return properties[key]["number"]
+    return properties[key][NUMBER]
 
 def get_checkbox(properties: dict, key: str) -> bool:
-    return properties[key]["checkbox"]
-
+    return properties[key][CHECKBOX]
 
 def map_page_to_activity_fields(page: dict) -> dict:
     props = page["properties"]
