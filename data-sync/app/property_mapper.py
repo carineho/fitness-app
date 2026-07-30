@@ -1,4 +1,5 @@
 # to extract values from notion database
+from .constants import NOTION_PROPERTY_NAMES
 
 TITLE = "title"
 PLAIN_TEXT = "plain_text"
@@ -9,6 +10,10 @@ SELECT = "select"
 MULTI_SELECT = "multi_select"
 NUMBER = "number"
 CHECKBOX = "checkbox"
+
+
+def get_property_name(key: str) -> str:
+    return NOTION_PROPERTY_NAMES.get(key, key)
 
 def get_title(properties: dict, key: str) -> str:
     items = properties[key][TITLE]
@@ -39,18 +44,18 @@ def map_page_to_activity_fields(page: dict) -> dict:
     props = page["properties"]
     return {
         "notion_page_id": page["id"],
-        "name": get_title(props, "Name"),
-        "date": get_date(props, "Date"),
-        "sport_type": get_select(props, "Sport Type"),
-        "body_area": get_multi_select(props, "Body Area"),
-        "location": get_rich_text(props, "Location"),
-        "distance_km": get_number(props, "Distance (km)"),
-        "pace": get_number(props, "Pace (min/km)"),
-        "yoga_type": get_select(props, "Yoga Type"),
-        "dive_site": get_rich_text(props, "Dive Site"),
-        "max_depth_m": get_number(props, "Max Depth (m)"),
-        "duration_min": get_number(props, "Duration (min)"),
-        "details": get_rich_text(props, "Details"),
-        "notes": get_rich_text(props, "Notes"),
-        "synced": get_checkbox(props, "Synced"),
+        "name": get_title(props, get_property_name("name")),
+        "date": get_date(props, get_property_name("date")),
+        "sport_type": get_select(props, get_property_name("sport_type")),
+        "body_area": get_multi_select(props, get_property_name("body_area")),
+        "location": get_rich_text(props, get_property_name("location")),
+        "distance_km": get_number(props, get_property_name("distance_km")),
+        "pace": get_number(props, get_property_name("pace")),
+        "yoga_type": get_select(props, get_property_name("yoga_type")),
+        "dive_site": get_rich_text(props, get_property_name("dive_site")),
+        "max_depth_m": get_number(props, get_property_name("max_depth_m")),
+        "duration_min": get_number(props, get_property_name("duration_min")),
+        "details": get_rich_text(props, get_property_name("details")),
+        "notes": get_rich_text(props, get_property_name("notes")),
+        "synced": get_checkbox(props, get_property_name("synced")),
     }
