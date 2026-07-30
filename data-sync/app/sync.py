@@ -80,12 +80,24 @@ def upsert_session_detail(session: Session, activity: Activity, fields: dict):
 
     session.commit()
 
-
 def sync_notion_to_db(session: Session, notion_pages: list[dict], mapper_fn):
     synced_count = 0
+    skipped = []
+
     for page in notion_pages:
-        fields = mapper_fn(page)
-        activity = upsert_activity(session, fields)
-        upsert_session_detail(session, activity, fields)
-        synced_count += 1
-    return synced_count
+        try:
+            fields = mapper_fn(page)
+
+            if not fields["sport_type"]:
+                skipped.append({"page_id": page["id"], "reason": "missing sport_type"})
+                continue
+
+            activity = upsert_activity(session, fields)
+            upsert_session_detail(session, activity, fields)
+            synced_count += 1
+
+        except Exception as e:
+            session.rollback()
+            skipped.append({"page_id": page["id"], "reason": str(e)})
+
+    return {"synced": synced_count, "skipped": skipped}
