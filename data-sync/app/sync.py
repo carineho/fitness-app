@@ -1,6 +1,6 @@
 # sync.py
 from sqlmodel import Session, select
-from models import Activity, ClimbSession, StrengthSession, RunDetail, YogaDetail, DiveDetail
+from app.models import Activity, ClimbSession, StrengthSession, RunDetail, YogaDetail, DiveDetail
 
 def upsert_activity(session: Session, fields: dict) -> Activity:
     existing = session.exec(

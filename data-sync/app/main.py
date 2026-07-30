@@ -5,9 +5,9 @@ load_dotenv()
 import os
 from fastapi import FastAPI
 from sqlmodel import create_engine, Session
-from notion_client import query_database
-from property_mapper import map_page_to_activity_fields
-from sync import sync_notion_to_db
+from app.notion_client import query_database
+from app.property_mapper import map_page_to_activity_fields
+from app.sync import sync_notion_to_db
 
 app = FastAPI()
 engine = create_engine(os.environ["DATABASE_URL"])

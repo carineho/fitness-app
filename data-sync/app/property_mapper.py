@@ -1,5 +1,5 @@
 # to extract values from notion database
-from .constants import NOTION_PROPERTY_NAMES
+from app.constants import NOTION_PROPERTY_NAMES
 
 TITLE = "title"
 PLAIN_TEXT = "plain_text"
