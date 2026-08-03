@@ -10,6 +10,7 @@ def upsert_activity(session: Session, fields: dict) -> Activity:
     if existing:
         existing.date = fields["date"]
         existing.sport_type = fields["sport_type"]
+        existing.duration_minutes = fields["duration_min"]
         existing.notes = fields["notes"]
         activity = existing
     else:
@@ -17,6 +18,7 @@ def upsert_activity(session: Session, fields: dict) -> Activity:
             notion_page_id=fields["notion_page_id"],
             date=fields["date"],
             sport_type=fields["sport_type"],
+            duration_minutes=fields["duration_min"],
             notes=fields["notes"],
         )
         session.add(activity)
@@ -24,7 +26,6 @@ def upsert_activity(session: Session, fields: dict) -> Activity:
     session.commit()
     session.refresh(activity)
     return activity
-
 
 def upsert_session_detail(session: Session, activity: Activity, fields: dict):
     sport = fields["sport_type"]
@@ -63,9 +64,8 @@ def upsert_session_detail(session: Session, activity: Activity, fields: dict):
         ).first()
         if existing:
             existing.yoga_type = fields["yoga_type"]
-            existing.duration_minutes = fields["duration_min"]
         else:
-            session.add(YogaDetail(activity_id=activity.id, yoga_type=fields["yoga_type"], duration_minutes=fields["duration_min"]))
+            session.add(YogaDetail(activity_id=activity.id, yoga_type=fields["yoga_type"]))
 
     elif sport == "Diving":
         existing = session.exec(
@@ -73,10 +73,9 @@ def upsert_session_detail(session: Session, activity: Activity, fields: dict):
         ).first()
         if existing:
             existing.dive_site = fields["dive_site"]
-            existing.duration_minutes = fields["duration_min"]
             existing.max_depth_m = fields["max_depth_m"]
         else:
-            session.add(DiveDetail(activity_id=activity.id, dive_site=fields["dive_site"], duration_minutes=fields["duration_min"], max_depth_m=fields["max_depth_m"]))
+            session.add(DiveDetail(activity_id=activity.id, dive_site=fields["dive_site"], max_depth_m=fields["max_depth_m"]))
 
     session.commit()
 

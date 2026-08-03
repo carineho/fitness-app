@@ -1,6 +1,6 @@
 from logging.config import fileConfig
 import os
-from models import SQLModel
+from app.models import SQLModel
 from dotenv import load_dotenv
 
 from sqlalchemy import engine_from_config

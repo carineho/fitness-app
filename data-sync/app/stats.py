@@ -6,6 +6,30 @@ from app.models import (
     RunDetail, YogaDetail, DiveDetail,
 )
 
+def get_duration_stats(session: Session, sport_type: str = None) -> dict:
+    statement = select(Activity.sport_type, Activity.duration_minutes).where(Activity.duration_minutes.is_not(None))
+    if sport_type:
+        statement = statement.where(Activity.sport_type == sport_type)
+
+    results = session.exec(statement).all()
+    if not results:
+        return {"total_minutes": 0, "average_minutes": 0, "count": 0, "by_sport": {}}
+
+    durations = [r.duration_minutes for r in results]
+    by_sport = {}
+    for sport, mins in results:
+        by_sport.setdefault(sport, []).append(mins)
+
+    return {
+        "total_minutes": sum(durations),
+        "average_minutes": round(sum(durations) / len(durations), 1),
+        "count": len(durations),
+        "by_sport": {
+            sport: {"total_minutes": sum(vals), "average_minutes": round(sum(vals) / len(vals), 1), "count": len(vals)}
+            for sport, vals in by_sport.items()
+        },
+    }
+
 def get_climbing_stats(session: Session) -> list[dict]:
     statement = (
         select(Activity.date, ClimbSession.gym, Climb.grade_raw, Climb.grade_normalized, Climb.attempts, Climb.sent)

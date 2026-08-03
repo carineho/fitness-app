@@ -3,7 +3,7 @@
 - After installing alembic, initialize the migrations with `alembic init migrations`
 - To update the database schema
     - Edit `models.py`
-    - Run the command `alembic revision --autogenerate -m "describe the change"`
+    - Run the command (in the data-sync directory) `alembic revision --autogenerate -m "describe the change"`
     - Review the generated file in `migrations/versions/`
     - Run the command `alembic upgrade head`
     - Verify the tables are created / altered

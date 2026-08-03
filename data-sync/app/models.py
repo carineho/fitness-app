@@ -7,6 +7,7 @@ class Activity(SQLModel, table=True):
     notion_page_id: str = Field(unique=True, index=True)
     date: date
     sport_type: str
+    duration_minutes: Optional[int] = None
     notes: Optional[str] = None
 
 class ClimbSession(SQLModel, table=True):
@@ -32,13 +33,11 @@ class YogaDetail(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     activity_id: int = Field(foreign_key="activity.id")
     yoga_type: str
-    duration_minutes: int
 
 class DiveDetail(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     activity_id: int = Field(foreign_key="activity.id")
     dive_site: str
-    duration_minutes: int
     max_depth_m: float
 
 class StrengthSession(SQLModel, table=True):

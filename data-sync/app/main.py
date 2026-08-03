@@ -9,6 +9,7 @@ from app.notion_client import query_database
 from app.property_mapper import map_page_to_activity_fields
 from app.sync import sync_notion_to_db
 from app.stats import (
+    get_duration_stats,
     get_climbing_stats, get_climbing_by_gym,
     get_strength_stats, get_running_stats,
     get_yoga_stats, get_diving_stats,
@@ -77,3 +78,9 @@ def stats_overview(days: int = 7):
 def activities(start_date: str = None, end_date: str = None, sport_type: str = None):
     with Session(engine) as session:
         return get_activities(session, start_date, end_date, sport_type)
+
+
+@app.get("/stats/duration")
+def stats_duration(sport_type: str = None):
+    with Session(engine) as session:
+        return get_duration_stats(session, sport_type)
