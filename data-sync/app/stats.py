@@ -10,7 +10,7 @@ def get_climbing_stats(session: Session) -> list[dict]:
     statement = (
         select(Activity.date, ClimbSession.gym, Climb.grade_raw, Climb.grade_normalized, Climb.attempts, Climb.sent)
         .join(ClimbSession, ClimbSession.activity_id == Activity.id)
-        .join(Climb, Climb.climb_session_id == ClimbSession.id)
+        .join(Climb, Climb.climb_session_id == ClimbSession.id, isouter=True)
         .order_by(Activity.date)
     )
     results = session.exec(statement).all()
