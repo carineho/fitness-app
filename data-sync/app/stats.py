@@ -102,7 +102,7 @@ def get_running_stats(session: Session) -> list[dict]:
 
 def get_yoga_stats(session: Session) -> list[dict]:
     statement = (
-        select(Activity.date, YogaDetail.yoga_type, YogaDetail.duration_minutes)
+        select(Activity.date, Activity.duration_minutes, YogaDetail.yoga_type)
         .join(YogaDetail, YogaDetail.activity_id == Activity.id)
         .order_by(Activity.date)
     )
@@ -115,7 +115,7 @@ def get_yoga_stats(session: Session) -> list[dict]:
 
 def get_diving_stats(session: Session) -> list[dict]:
     statement = (
-        select(Activity.date, DiveDetail.dive_site, DiveDetail.duration_minutes, DiveDetail.max_depth_m)
+        select(Activity.date, Activity.duration_minutes, DiveDetail.dive_site, DiveDetail.max_depth_m)
         .join(DiveDetail, DiveDetail.activity_id == Activity.id)
         .order_by(Activity.date)
     )

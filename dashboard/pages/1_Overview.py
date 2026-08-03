@@ -1,5 +1,5 @@
 import streamlit as st
-from utils.api_client import get_overview_stats
+from utils.api_client import get_overview_stats, get_duration_stats
 import requests
 import os
 
@@ -18,7 +18,7 @@ st.subheader("Exercise Duration")
 sport_filter = st.selectbox("Filter by sport", ["All", "Climbing", "Strength", "Running", "Yoga", "Diving"])
 params = {} if sport_filter == "All" else {"sport_type": sport_filter}
 
-duration_data = requests.get(f"{os.environ['DATA_SYNC_URL']}/stats/duration", params=params).json()
+duration_data = get_duration_stats(sport_type=None if sport_filter == "All" else sport_filter)
 
 col1, col2, col3 = st.columns(3)
 col1.metric("Total minutes", duration_data["total_minutes"])

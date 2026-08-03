@@ -1,16 +1,60 @@
 import os
 import requests
+import streamlit as st
 from dotenv import load_dotenv
 
 load_dotenv()
 BASE_URL = os.environ["DATA_SYNC_URL"]
 
-def get_climbing_stats():
-    response = requests.get(f"{BASE_URL}/stats/climbing")
-    response.raise_for_status()
+
+def _get(path: str, params: dict = None):
+    """Shared GET helper — handles errors consistently across all endpoints."""
+    response = requests.get(f"{BASE_URL}{path}", params=params)
+    if response.status_code != 200:
+        st.error(f"data-sync returned {response.status_code}: {response.text}")
+        return []
     return response.json()
 
+
 def get_overview_stats(days: int = 7):
-    response = requests.get(f"{BASE_URL}/stats/overview", params={"days": days})
-    response.raise_for_status()
-    return response.json()
+    return _get("/stats/overview", params={"days": days})
+
+
+def get_climbing_stats():
+    return _get("/stats/climbing")
+
+
+def get_climbing_by_gym():
+    return _get("/stats/climbing/by-gym")
+
+
+def get_strength_stats():
+    return _get("/stats/strength")
+
+
+def get_running_stats():
+    return _get("/stats/running")
+
+
+def get_yoga_stats():
+    return _get("/stats/yoga")
+
+
+def get_diving_stats():
+    return _get("/stats/diving")
+
+
+def get_duration_stats(sport_type: str = None):
+    params = {"sport_type": sport_type} if sport_type else {}
+    return _get("/stats/duration", params=params)
+
+
+def get_activities(start_date: str = None, end_date: str = None, sport_type: str = None):
+    params = {}
+    if start_date:
+        params["start_date"] = start_date
+    if end_date:
+        params["end_date"] = end_date
+    if sport_type:
+        params["sport_type"] = sport_type
+    return _get("/activities", params=params)
