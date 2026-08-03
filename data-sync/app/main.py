@@ -17,7 +17,11 @@ from app.stats import (
 
 
 app = FastAPI()
-engine = create_engine(os.environ["DATABASE_URL"])
+engine = create_engine(
+    os.environ["DATABASE_URL"],
+    pool_pre_ping=True,
+    pool_recycle=300,   # recycle connections older than 5 min
+)
 
 @app.post("/sync")
 def sync():

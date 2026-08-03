@@ -23,7 +23,7 @@ with Session(engine) as session:
     activity = Activity(
         notion_page_id="seed-test-page",
         date=date.today(),
-        sport_type="climbing",
+        sport_type="Climbing",
         notes="felt strong",
     )
     session.add(activity)
