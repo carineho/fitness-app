@@ -49,3 +49,23 @@ def generate_session(request: AdhocRequest):
     prompt = build_adhoc_prompt(request)
     result = adhoc_agent.run_sync(prompt)
     return result.output
+
+@app.post("/generate-plan")
+def generate_plan(request: PlanRequest):
+    weekly_stats = requests.get(f"{DATA_SYNC_URL}/stats/weekly").json()
+    prompt = build_weekly_prompt(request, weekly_stats)
+    result = weekly_agent.run_sync(prompt)
+    plan = result.output
+
+    save_payload = {
+        "plan_type": "weekly",
+        "lookback_days": 7,
+        "difficulty": request.difficulty,
+        "focus_area": request.focus_area,
+        "upcoming_event": request.upcoming_event,
+        "sessions": [s.model_dump() for s in plan.sessions],
+        "rationale": plan.rationale,
+    }
+    requests.post(f"{DATA_SYNC_URL}/plans", json=save_payload)
+
+    return plan

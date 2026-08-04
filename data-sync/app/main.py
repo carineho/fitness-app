@@ -5,6 +5,8 @@ load_dotenv()
 import os
 from fastapi import FastAPI
 from sqlmodel import create_engine, Session
+from datetime import date as date_type
+from app.models import GeneratedPlan
 from app.notion_client import query_database
 from app.property_mapper import map_page_to_activity_fields
 from app.sync import sync_notion_to_db
@@ -20,7 +22,6 @@ from app.stats import (
     get_overview_stats,
     get_activities,
 )
-
 
 
 app = FastAPI()
@@ -96,3 +97,34 @@ def activities(start_date: str = None, end_date: str = None, sport_type: str = N
 def stats_duration(sport_type: str = None):
     with Session(engine) as session:
         return get_duration_stats(session, sport_type)
+
+
+@app.post("/plans")
+def save_plan(plan: dict):
+    with Session(engine) as session:
+        record = GeneratedPlan(
+            plan_type=plan["plan_type"],
+            generated_at=date_type.today(),
+            lookback_days=plan.get("lookback_days"),
+            difficulty=plan["difficulty"],
+            focus_area=plan.get("focus_area"),
+            upcoming_event=plan.get("upcoming_event"),
+            sessions=plan["sessions"],
+            rationale=plan["rationale"],
+        )
+        session.add(record)
+        session.commit()
+        session.refresh(record)
+        return {"id": record.id}
+
+
+@app.get("/plans/latest")
+def get_latest_plan(plan_type: str = "weekly"):
+    with Session(engine) as session:
+        statement = (
+            select(GeneratedPlan)
+            .where(GeneratedPlan.plan_type == plan_type)
+            .order_by(GeneratedPlan.generated_at.desc())
+        )
+        result = session.exec(statement).first()
+        return result

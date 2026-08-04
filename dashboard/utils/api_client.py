@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 BASE_URL = os.environ["DATA_SYNC_URL"]
-
+AI_SERVICE_URL = os.environ["AI_SERVICE_URL"]
 
 def _get(path: str, params: dict = None):
     """Shared GET helper — handles errors consistently across all endpoints."""
@@ -58,3 +58,31 @@ def get_activities(start_date: str = None, end_date: str = None, sport_type: str
     if sport_type:
         params["sport_type"] = sport_type
     return _get("/activities", params=params)
+
+
+def generate_weekly_plan(difficulty, focus_area, upcoming_event, duration):
+    payload = {
+        "difficulty": difficulty,
+        "focus_area": focus_area or None,
+        "upcoming_event": upcoming_event or None,
+        "preferred_duration_minutes": duration,
+    }
+    response = requests.post(f"{AI_SERVICE_URL}/generate-plan", json=payload)
+    if response.status_code != 200:
+        st.error(f"ai-service returned {response.status_code}: {response.text}")
+        return None
+    return response.json()
+
+
+def generate_adhoc_session(difficulty, sport_type, focus_area, duration):
+    payload = {
+        "difficulty": difficulty,
+        "sport_type": sport_type or None,
+        "focus_area": focus_area or None,
+        "duration_minutes": duration,
+    }
+    response = requests.post(f"{AI_SERVICE_URL}/generate-session", json=payload)
+    if response.status_code != 200:
+        st.error(f"ai-service returned {response.status_code}: {response.text}")
+        return None
+    return response.json()
