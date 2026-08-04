@@ -34,6 +34,48 @@ def get_duration_stats(session: Session, sport_type: str = None) -> dict:
         },
     }
 
+def get_weekly_summary(session: Session, days: int = 7) -> dict:
+    cutoff = date.today() - timedelta(days=days)
+
+    activities = session.exec(
+        select(Activity).where(Activity.date >= cutoff)
+    ).all()
+
+    by_sport = {}
+    total_duration = 0
+    for a in activities:
+        by_sport.setdefault(a.sport_type, []).append(a)
+        if a.duration_minutes:
+            total_duration += a.duration_minutes
+
+    summary = {
+        "period_days": days,
+        "total_sessions": len(activities),
+        "total_duration_minutes": total_duration,
+        "by_sport": {sport: len(items) for sport, items in by_sport.items()},
+    }
+
+    # climbing detail: max grade, gyms visited
+    climb_stats = get_climbing_stats(session)
+    recent_climbs = [c for c in climb_stats if c["date"] >= cutoff.isoformat()]
+    if recent_climbs:
+        summary["climbing_detail"] = {
+            "sessions": len(set(c["date"] for c in recent_climbs)),
+            "gyms": list(set(c["gym"] for c in recent_climbs)),
+            "max_grade": max((c["grade_normalized"] for c in recent_climbs if c["grade_normalized"]), default=None),
+        }
+
+    # strength detail: body areas trained
+    strength_stats = get_strength_stats(session)
+    recent_strength = [s for s in strength_stats if s["date"] >= cutoff.isoformat()]
+    if recent_strength:
+        summary["strength_detail"] = {
+            "sessions": len(recent_strength),
+            "body_areas": [s["body_area"] for s in recent_strength],
+        }
+
+    return summary
+
 def get_climbing_stats(session: Session) -> list[dict]:
     statement = (
         select(Activity.date, ClimbSession.gym, Climb.grade_raw, Climb.grade_normalized, Climb.attempts, Climb.sent)

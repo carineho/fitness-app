@@ -1,6 +1,7 @@
 from sqlmodel import SQLModel, Field
 from typing import Optional
 from datetime import date
+from sqlmodel import JSON, Column
 
 class Activity(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -9,6 +10,18 @@ class Activity(SQLModel, table=True):
     sport_type: str
     duration_minutes: Optional[int] = None
     notes: Optional[str] = None
+
+class GeneratedPlan(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    plan_type: str  # "weekly" or "adhoc"
+    generated_at: date
+    lookback_days: Optional[int] = None
+    difficulty: str
+    focus_area: Optional[str] = None
+    upcoming_event: Optional[str] = None
+    sessions: dict = Field(sa_column=Column(JSON))  # stores list of session dicts
+    rationale: str
+    notion_page_id: Optional[str] = None
 
 class ClimbSession(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

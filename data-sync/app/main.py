@@ -10,11 +10,17 @@ from app.property_mapper import map_page_to_activity_fields
 from app.sync import sync_notion_to_db
 from app.stats import (
     get_duration_stats,
-    get_climbing_stats, get_climbing_by_gym,
-    get_strength_stats, get_running_stats,
-    get_yoga_stats, get_diving_stats,
-    get_overview_stats, get_activities,
+    get_weekly_summary,
+    get_climbing_stats,
+    get_climbing_by_gym,
+    get_strength_stats,
+    get_running_stats,
+    get_yoga_stats,
+    get_diving_stats,
+    get_overview_stats,
+    get_activities,
 )
+
 
 
 app = FastAPI()
@@ -30,6 +36,12 @@ def sync():
     with Session(engine) as session:
         count = sync_notion_to_db(session, pages, map_page_to_activity_fields)
     return {"synced": count}
+
+
+@app.get("/stats/weekly")
+def stats_weekly(days: int = 7):
+    with Session(engine) as session:
+        return get_weekly_summary(session, days)
 
 
 @app.get("/stats/climbing")
