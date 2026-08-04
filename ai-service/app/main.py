@@ -1,0 +1,51 @@
+import os
+import requests
+from fastapi import FastAPI
+from dotenv import load_dotenv
+from app.schemas import PlanRequest, AdhocRequest, WeeklyPlan, AdhocSession
+from app.agent import weekly_agent, adhoc_agent
+
+load_dotenv()
+app = FastAPI()
+
+DATA_SYNC_URL = os.environ["DATA_SYNC_URL"]
+
+
+def build_weekly_prompt(request: PlanRequest, weekly_stats: dict) -> str:
+    parts = [f"Past week's activity summary: {weekly_stats}"]
+    parts.append(f"Requested difficulty: {request.difficulty}")
+    if request.focus_area:
+        parts.append(f"Focus area for this week: {request.focus_area}")
+    if request.upcoming_event:
+        parts.append(f"Training for upcoming event: {request.upcoming_event}")
+    if request.preferred_duration_minutes:
+        parts.append(f"Preferred session duration: ~{request.preferred_duration_minutes} minutes")
+    parts.append("Generate a balanced 7-day plan, including rest days where appropriate.")
+    return "\n".join(parts)
+
+
+@app.post("/generate-plan", response_model=WeeklyPlan)
+def generate_plan(request: PlanRequest):
+    weekly_stats = requests.get(f"{DATA_SYNC_URL}/stats/weekly").json()
+    prompt = build_weekly_prompt(request, weekly_stats)
+    result = weekly_agent.run_sync(prompt)
+    return result.output
+
+
+def build_adhoc_prompt(request: AdhocRequest) -> str:
+    parts = [f"Requested difficulty: {request.difficulty}"]
+    if request.sport_type:
+        parts.append(f"Sport: {request.sport_type}")
+    if request.focus_area:
+        parts.append(f"Focus area: {request.focus_area}")
+    if request.duration_minutes:
+        parts.append(f"Target duration: {request.duration_minutes} minutes")
+    parts.append("Generate one single workout session matching these preferences.")
+    return "\n".join(parts)
+
+
+@app.post("/generate-session", response_model=AdhocSession)
+def generate_session(request: AdhocRequest):
+    prompt = build_adhoc_prompt(request)
+    result = adhoc_agent.run_sync(prompt)
+    return result.output
