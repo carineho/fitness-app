@@ -16,8 +16,8 @@ def build_weekly_prompt(request: PlanRequest, weekly_stats: dict) -> str:
     parts.append(f"Requested difficulty: {request.difficulty}")
     if request.focus_area:
         parts.append(f"Focus area for this week: {request.focus_area}")
-    if request.upcoming_event:
-        parts.append(f"Training for upcoming event: {request.upcoming_event}")
+    if request.remarks:
+        parts.append(f"Additional context/constraints: {request.remarks}")
     if request.preferred_duration_minutes:
         parts.append(f"Preferred session duration: ~{request.preferred_duration_minutes} minutes")
     parts.append("Generate a balanced 7-day plan, including rest days where appropriate.")

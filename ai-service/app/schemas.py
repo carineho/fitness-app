@@ -19,8 +19,8 @@ class AdhocSession(BaseModel):
 
 class PlanRequest(BaseModel):
     difficulty: Literal["Easy", "Moderate", "Hard"] = "Moderate"
-    focus_area: str | None = Field(default=None, description="e.g. 'core' or 'climbing endurance'")
-    upcoming_event: str | None = Field(default=None, description="e.g. 'half marathon in 3 weeks'")
+    focus_area: str | None = Field(default=None, description="e.g. 'core' or 'climbing endurance' — a specific body area or skill to emphasize")
+    remarks: str | None = Field(default=None, description="Any other context: upcoming events, scheduling constraints, injuries, preferences")
     preferred_duration_minutes: int | None = None
 
 class AdhocRequest(BaseModel):
@@ -28,3 +28,20 @@ class AdhocRequest(BaseModel):
     sport_type: Literal["Climbing", "Strength", "Running", "Yoga", "Diving"] | None = None
     focus_area: str | None = None
     duration_minutes: int | None = None
+
+class ExercisePrescription(BaseModel):
+    exercise_name: str
+    exercise_type: Literal["reps", "time"]
+    sets: int | None = None
+    reps: int | None = None
+    target_weight_kg: float | None = Field(default=None, description="Suggested weight, if applicable — omit if bodyweight")
+    duration_seconds: int | None = None
+
+class WorkoutSession(BaseModel):
+    day: str
+    sport_type: Literal["Climbing", "Strength", "Running", "Yoga", "Diving", "Rest"]
+    focus_area: str | None = None
+    intensity: Literal["Low", "Moderate", "High"]
+    duration_minutes: int
+    exercises: list[ExercisePrescription] | None = Field(default=None, description="Detailed exercise breakdown, mainly for Strength sessions")
+    notes: str = Field(description="General guidance — target pace for runs, target grade for climbing, etc.")

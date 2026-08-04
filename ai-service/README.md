@@ -1,6 +1,7 @@
 # AI Service
 This app generates workout plans (weekly and adhoc sessions) based on past progress.
 
+<br>
 
 # Local Development
 - Activate the virtual environment under the ai-service directory `source venv/bin/activate`
@@ -11,6 +12,7 @@ This app generates workout plans (weekly and adhoc sessions) based on past progr
   -d '{"difficulty": "Moderate", "sport_type": "Strength", "focus_area": "core", "duration_minutes": 30}'`
 - Swagger UI: `http://localhost:8001/docs`
 
+<br>
 
 # R&D
 |       | Groq | Together AI | Fireworks AI | OpenAI | Anthropic |

@@ -60,11 +60,11 @@ def get_activities(start_date: str = None, end_date: str = None, sport_type: str
     return _get("/activities", params=params)
 
 
-def generate_weekly_plan(difficulty, focus_area, upcoming_event, duration):
+def generate_weekly_plan(difficulty, focus_area, remarks, duration):
     payload = {
         "difficulty": difficulty,
         "focus_area": focus_area or None,
-        "upcoming_event": upcoming_event or None,
+        "remarks": remarks or None,
         "preferred_duration_minutes": duration,
     }
     response = requests.post(f"{AI_SERVICE_URL}/generate-plan", json=payload)
