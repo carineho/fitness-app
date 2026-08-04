@@ -1,9 +1,13 @@
 from sqlmodel import Session, select, func
 from datetime import date, timedelta
 from app.models import (
-    Activity, ClimbSession, Climb,
-    StrengthSession, Exercise,
-    RunDetail, YogaDetail, DiveDetail,
+    Activity,
+    ClimbSession,
+    Climb,
+    StrengthSession,
+    RunDetail,
+    YogaDetail,
+    DiveDetail,
 )
 
 def get_duration_stats(session: Session, sport_type: str = None) -> dict:
