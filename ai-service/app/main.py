@@ -24,14 +24,6 @@ def build_weekly_prompt(request: PlanRequest, weekly_stats: dict) -> str:
     return "\n".join(parts)
 
 
-@app.post("/generate-plan", response_model=WeeklyPlan)
-def generate_plan(request: PlanRequest):
-    weekly_stats = requests.get(f"{DATA_SYNC_URL}/stats/weekly").json()
-    prompt = build_weekly_prompt(request, weekly_stats)
-    result = weekly_agent.run_sync(prompt)
-    return result.output
-
-
 def build_adhoc_prompt(request: AdhocRequest) -> str:
     parts = [f"Requested difficulty: {request.difficulty}"]
     if request.sport_type:
@@ -50,7 +42,7 @@ def generate_session(request: AdhocRequest):
     result = adhoc_agent.run_sync(prompt)
     return result.output
 
-@app.post("/generate-plan")
+@app.post("/generate-plan", response_model=WeeklyPlan)
 def generate_plan(request: PlanRequest):
     weekly_stats = requests.get(f"{DATA_SYNC_URL}/stats/weekly").json()
     prompt = build_weekly_prompt(request, weekly_stats)
@@ -62,10 +54,12 @@ def generate_plan(request: PlanRequest):
         "lookback_days": 7,
         "difficulty": request.difficulty,
         "focus_area": request.focus_area,
-        "upcoming_event": request.upcoming_event,
+        "remarks": request.remarks,
         "sessions": [s.model_dump() for s in plan.sessions],
         "rationale": plan.rationale,
     }
-    requests.post(f"{DATA_SYNC_URL}/plans", json=save_payload)
+    print(f"Sending payload: {save_payload}")
+    save_response = requests.post(f"{DATA_SYNC_URL}/plans", json=save_payload)
+    print(f"Save plan response: {save_response.status_code} {save_response.text}")
 
     return plan
