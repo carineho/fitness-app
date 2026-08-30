@@ -30,7 +30,7 @@ Balance recovery and progression - do not overload the same body area on consecu
 Respect the user's stated focus area and any additional context/constraints they provide."""
 
 weekly_agent = Agent(
-    "groq:llama-3.3-70b-versatile",
+    "groq:openai/gpt-oss-120b",
     output_type=WeeklyPlan,
     system_prompt=WEEKLY_SYSTEM_PROMPT,
 )
@@ -39,7 +39,7 @@ ADHOC_SYSTEM_PROMPT = """You are a fitness coach creating a single workout sessi
 Keep it focused and specific to what the user asked for."""
 
 adhoc_agent = Agent(
-    "groq:llama-3.3-70b-versatile",
+    "groq:openai/gpt-oss-120b",
     output_type=AdhocSession,
     system_prompt=ADHOC_SYSTEM_PROMPT,
 )
