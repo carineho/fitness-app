@@ -86,3 +86,10 @@ def generate_adhoc_session(difficulty, sport_type, focus_area, duration):
         st.error(f"ai-service returned {response.status_code}: {response.text}")
         return None
     return response.json()
+
+def trigger_sync():
+    response = requests.post(f"{BASE_URL}/sync")
+    if response.status_code != 200:
+        st.error(f"Sync failed: {response.status_code} {response.text}")
+        return None
+    return response.json()
