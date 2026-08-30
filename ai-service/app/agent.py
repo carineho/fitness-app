@@ -30,7 +30,7 @@ Balance recovery and progression - do not overload the same body area on consecu
 Respect the user's stated focus area and any additional context/constraints they provide."""
 
 weekly_agent = Agent(
-    "groq:openai/gpt-oss-120b",
+    "groq:openai/gpt-oss-20b",
     output_type=WeeklyPlan,
     system_prompt=WEEKLY_SYSTEM_PROMPT,
 )
