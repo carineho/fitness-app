@@ -10,17 +10,23 @@ app = FastAPI()
 
 DATA_SYNC_URL = os.environ["DATA_SYNC_URL"]
 
-
+# TODO: improve on weekly prompt
 def build_weekly_prompt(request: PlanRequest, weekly_stats: dict) -> str:
-    parts = [f"Past week's activity summary: {weekly_stats}"]
-    parts.append(f"Requested difficulty: {request.difficulty}")
-    if request.focus_area:
-        parts.append(f"Focus area for this week: {request.focus_area}")
-    if request.remarks:
-        parts.append(f"Additional context/constraints: {request.remarks}")
-    if request.preferred_duration_minutes:
-        parts.append(f"Preferred session duration: ~{request.preferred_duration_minutes} minutes")
-    parts.append("Generate a balanced 7-day plan, including rest days where appropriate.")
+    compact_stats = {
+        "total_sessions": weekly_stats.get("total_sessions"),
+        "total_duration_minutes": weekly_stats.get("total_duration_minutes"),
+        "by_sport": weekly_stats.get("by_sport"),
+    }
+    parts = [f"Past week's activity summary: {compact_stats}"]
+    # parts = [f"Past week's activity summary: {weekly_stats}"]
+    # parts.append(f"Requested difficulty: {request.difficulty}")
+    # if request.focus_area:
+    #     parts.append(f"Focus area for this week: {request.focus_area}")
+    # if request.remarks:
+    #     parts.append(f"Additional context/constraints: {request.remarks}")
+    # if request.preferred_duration_minutes:
+    #     parts.append(f"Preferred session duration: ~{request.preferred_duration_minutes} minutes")
+    # parts.append("Generate a balanced 7-day plan, including rest days where appropriate.")
     return "\n".join(parts)
 
 
