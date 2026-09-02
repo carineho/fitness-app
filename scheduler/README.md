@@ -43,6 +43,9 @@ Activating the virtual environment:
 <br>
 
 # Local Development
+
+Note that `data-sync` should already be running locally (see [../data-sync/README.md](../data-sync/README.md)), since `run_sync` calls its `/sync` endpoint directly.
+
 ### Worker
 In terminal 1, run the following commands:
 ```
@@ -54,27 +57,31 @@ celery -A app.celery_app worker --loglevel=info
 
 <br>
 
-### Trigger Sync
+### Trigger Sync Manually
 In terminal 2, run the following commands:
 ```
-# terminal 2 — trigger manually to test
+# terminal 2 — trigger manually, to test the task without waiting for the schedule
 cd scheduler
 source venv/bin/activate
 python -c "from app.tasks import run_sync; run_sync.delay()"
 ```
 
-It is completed when terminal 1 shows the task received and executed, printing the sync result matching a normal curl -X POST http://127.0.0.1:8000/sync response.
-
+This step is verified as successful when terminal 1 (the worker) logs that the task was received and executed, printing a sync result equivalent to a direct `curl -X POST http://127.0.0.1:8000/sync` call.
 
 <br>
 
 ### Test Beat
 In terminal 3, run the following commands:
 ```
-# terminal 3
+# terminal 3 — beat scheduler
 cd scheduler
 source venv/bin/activate
 celery -A app.celery_app beat --loglevel=info
 ```
 
-It is completed when it logs something like Scheduler: Sending due task daily-sync at the right time, or at minimum shows the task registered with the correct next-run time in its startup log — confirms the automatic schedule is wired correctly, separate from the manual trigger you just verified.
+This step is verified as successful when the log shows the `daily-sync` task registered with the correct next scheduled run time, or when it logs `Scheduler: Sending due task daily-sync` at the scheduled time. This confirms that the automatic daily schedule is registered correctly, separately from the manual trigger verified above.
+
+<br>
+
+# Future Improvements
+- **Broker connection over TLS with certificate verification**: `app/celery_app.py` contains a commented-out `broker_use_ssl={"ssl_cert_reqs": ssl.CERT_REQUIRED}` option. This setting, if the broker connection uses the `rediss://` scheme, would enforce verification of the broker's TLS certificate rather than only encrypting the connection without verifying the certificate presented by the server. This would harden the connection to Upstash against interception, and should be revisited once it is confirmed whether `REDIS_URL` is already using the `rediss://` scheme.
