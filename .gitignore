@@ -3,6 +3,7 @@
 venv/
 **/venv/
 .DS_Store
+ssh-key-2026-08-16.key*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

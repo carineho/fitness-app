@@ -1,7 +1,8 @@
 import streamlit as st
 from utils.api_client import get_overview_stats, get_duration_stats
-import requests
-import os
+from utils.auth import require_auth
+
+require_auth()
 
 st.title("Overview")
 

@@ -1,7 +1,10 @@
 import streamlit as st
 from utils.api_client import trigger_sync
+from utils.auth import require_auth
 
 st.set_page_config(page_title="Fitness Dashboard", layout="wide")
+require_auth()
+
 st.title("Fitness Dashboard")
 st.write("Select a page from the sidebar to view detailed stats.")
 

@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 from utils.api_client import generate_weekly_plan, generate_adhoc_session
+from utils.auth import require_auth
+
+require_auth()
 
 st.title("Generate Workout Plan")
 
