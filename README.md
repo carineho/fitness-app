@@ -1,13 +1,25 @@
 # fitness-app
-Fitness tracker synced to Notion, with an LLM-generated weekly workout plan based on logged progress
+
+fitness-app is a personal fitness tracking system that uses Notion as the primary logging interface, while a separate set of services synchronizes that data into a structured database, generates visualizations, and produces LLM-based workout recommendations. The objective is to allow activities to be logged quickly in a familiar tool (Notion), while still supporting the structured querying, historical analysis, and automated planning that a spreadsheet or a Notion page alone cannot easily provide.
+
+The system is composed of four services:
+
+- **data-sync**: A FastAPI service that reads activity entries from a Notion database and synchronizes them into a PostgreSQL database (Neon), normalizing the data into a structured schema and exposing statistics endpoints consumed by the dashboard.
+- **ai-service**: A FastAPI service that generates a tailored workout plan using an LLM (Groq), based on recently logged activity retrieved from data-sync.
+- **dashboard**: A Streamlit application that visualizes workout history and statistics, and provides a manual sync trigger and a plan generation interface. Access is restricted by a shared password.
+- **scheduler**: A Celery-based service that automatically triggers the Notion-to-database sync on a daily schedule, in addition to supporting on-demand triggers.
 
 <br>
 
-# Core Functionalities:
-- Activity logging: log workout sessions
-- Progress dashboard: notion page showing workout history over time
-- Weekly AI generated workout plan: tailored plan based on past performance
-- System reliability: logging and notification service
+# Core Functionalities
+
+- **Activity logging**: Workout sessions are logged directly in Notion, which serves as the source of truth for raw activity data.
+- **Automated and on-demand sync**: The scheduler triggers `data-sync` automatically on a daily schedule, and a manual sync can also be triggered at any time from the dashboard.
+- **Progress dashboard**: A Streamlit application that queries `data-sync` and renders workout history and statistics as charts, broken down by activity type (climbing, strength, running, yoga, diving).
+- **AI-generated workout plan**: `ai-service` generates a tailored workout plan, either as a structured weekly plan or an ad-hoc single session, based on recently logged activity.
+
+### Planned / Roadmap
+- **System reliability**: A dedicated logging and notification service is planned but not yet implemented. Currently, service output is limited to standard application logs (for example, Celery worker output and Railway deployment logs).
 
 <br>
 
@@ -28,49 +40,61 @@ The following tech stack is used:
 # Rationale for Key Decisions
 
 **Celery and Redis**
-
-The scheduler has a narrow requirement: queue and execute a single task type (`run_sync`) on a fixed daily schedule, or on demand. This corresponds to a single producer and a single consumer. Kafka and Azure Event Hub are designed for high-throughput, durable, and replayable event streams consumed independently by multiple consumer groups, none of which apply to this use case. Introducing either would add considerable operational overhead without a corresponding benefit at this scale.
-
-Within this design, Redis functions as the Celery message broker rather than as a cache. Its list and publish/subscribe primitives are sufficient to implement a basic task queue, which is the specific function Celery requires. Caching is the most common use case for Redis, but it is not the only one.
-
-Upstash was selected as the Redis provider specifically because it is serverless and billed on a pay-per-request basis, which aligns better with a Railway deployment than provisioning and maintaining a persistent, self-hosted Redis instance.
+- The scheduler has a narrow requirement: queue and execute a single task type (`run_sync`) on a fixed daily schedule, or on demand. This corresponds to a single producer and a single consumer. Kafka and Azure Event Hub are designed for high-throughput, durable, and replayable event streams consumed independently by multiple consumer groups, none of which apply to this use case. Introducing either would add considerable operational overhead without a corresponding benefit at this scale.
+- Within this design, Redis functions as the Celery message broker rather than as a cache. Its list and publish/subscribe primitives are sufficient to implement a basic task queue, which is the specific function Celery requires. Caching is the most common use case for Redis, but it is not the only one.
+- Upstash was selected as the Redis provider specifically because it is serverless and billed on a pay-per-request basis, which aligns better with a Railway deployment than provisioning and maintaining a persistent, self-hosted Redis instance.
 
 **Neon over a self-hosted PostgreSQL instance**
-
-Neon removes the operational responsibility of provisioning, patching, and scaling a database server. Its ability to scale to zero when idle is well suited to an application with intermittent traffic, such as a personal fitness tracker.
+- Neon removes the operational responsibility of provisioning, patching, and scaling a database server. Its ability to scale to zero when idle is well suited to an application with intermittent traffic, such as a personal fitness tracker.
 
 
 <br>
 
 # Local Development
-### data-sync
-- Run `source venv/bin/activate` in the data-sync directory to activate the virtual environment
-- Run `uvicorn app.main:app --reload` to start the server
-- To call the sync endpoint: run `curl -X POST http://127.0.0.1:8000/sync` in another terminal
-- If port is already in use:
-    - Run `lsof -i :8000` to find the running pid
-    - Kill the process `kill -9 <pid>`
 
-### dashboard
-- Run `source venv/bin/activate` in the dashboard directory to activate the virtual environment
-- Run `streamlit run app.py` to launch the streamlit application
+Each service requires its own `.env` file in its respective directory. No `.env.example` files currently exist in this repository, so the required variables are listed explicitly below. None of the services should be committed with real credentials in version control.
+
+Because `dashboard` and `scheduler` call `data-sync` and `ai-service` over HTTP, `data-sync` and `ai-service` should be started first when running the full system locally.
+
+### data-sync
+Required environment variables: `DATABASE_URL`, `NOTION_API_KEY`, `NOTION_WORKOUT_LOG_DB_ID`.
+
+- Run `source venv/bin/activate` in the data-sync directory to activate the virtual environment.
+- Run `uvicorn app.main:app --reload` to start the server on port 8000.
+- To call the sync endpoint, run `curl -X POST http://127.0.0.1:8000/sync` in another terminal.
+- If the port is already in use:
+    - Run `lsof -i :8000` to find the running process id.
+    - Terminate it with `kill -9 <pid>`.
 
 ### ai-service
-- Run `source venv/bin/activate` in the ai-service directory to activate the virtual environment
-- Run `uvicorn app.main:app --reload --port 8001` to start the server
-- If port is already in use:
-    - Run `lsof -i :8001` to find the running pid
-    - Kill the process `kill -9 <pid>`
+Required environment variables: `GROQ_API_KEY`, `DATA_SYNC_URL`.
+
+- Run `source venv/bin/activate` in the ai-service directory to activate the virtual environment.
+- Run `uvicorn app.main:app --reload --port 8001` to start the server.
+- If the port is already in use:
+    - Run `lsof -i :8001` to find the running process id.
+    - Terminate it with `kill -9 <pid>`.
+
+### dashboard
+Required environment variables: `DATA_SYNC_URL`, `AI_SERVICE_URL`, `DASHBOARD_PASSWORD` (the password used to access the dashboard locally; this must also be set as an environment variable on the deployed Railway service).
+
+- Ensure `data-sync` and `ai-service` are already running, since every page queries them on load.
+- Run `source venv/bin/activate` in the dashboard directory to activate the virtual environment.
+- Run `streamlit run app.py` to launch the Streamlit application.
+- On first load, enter the value configured in `DASHBOARD_PASSWORD` to access the dashboard.
 
 ### scheduler
-- Run `source venv/bin/activate` in the scheduler directory to activate the virtual environment
-- To test, open 2 terminals
-    - Terminal 1 - worker
+Required environment variables: `REDIS_URL`, `DATA_SYNC_URL`, `AI_SERVICE_URL`.
+
+- Run `source venv/bin/activate` in the scheduler directory to activate the virtual environment.
+- To test, open two terminals:
+    - Terminal 1 (worker):
         - `cd scheduler` and `source venv/bin/activate`
         - `celery -A app.celery_app worker --loglevel=info`
-    - Terminal 2 - trigger manually to test
+    - Terminal 2 (manual trigger, for testing):
         - `cd scheduler` and `source venv/bin/activate`
         - `python -c "from app.tasks import run_sync; run_sync.delay()"`
-        - In terminal 1 (worker), the /sync endpoint is called
-    - Terminal 3 - test Beat separately once above 2 are completed
+        - Terminal 1 (worker) should log that the task was received and executed, calling the `/sync` endpoint.
+    - Terminal 3 (Beat, tested separately once the above two are confirmed working):
         - `celery -A app.celery_app beat --loglevel=info`
+        - This should log the scheduled task with its correct next run time, confirming the automatic daily schedule is registered correctly.
